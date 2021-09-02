@@ -1,4 +1,3 @@
-import codecs
 import pickle
 from unittest.mock import MagicMock, patch
 
@@ -61,25 +60,24 @@ def test_aqt_compile(mock_post: MagicMock) -> None:
 
     cz q[0],q[1];
     """
-    expected_qc = qiskit.QuantumCircuit(2)
-    expected_qc.cz(0, 1)
-
     mock_post.return_value.json = lambda: {
+        "qiskit_circuits": qss.converters.serialize_circuits(qc),
         "qasm_strs": [out_qasm_str],
-        "state_jp": codecs.encode(pickle.dumps({}), "base64").decode(),
+        "state_jp": qss.converters.bytes_to_str(pickle.dumps({})),
     }
     compiler_output = provider.aqt_compile(qc)
-    assert compiler_output.circuit == expected_qc
+    assert compiler_output.circuit == qc
     assert not hasattr(compiler_output, "circuits")
 
     compiler_output = provider.aqt_compile([qc])
-    assert compiler_output.circuits == [expected_qc]
+    assert compiler_output.circuits == [qc]
     assert not hasattr(compiler_output, "circuit")
 
     mock_post.return_value.json = lambda: {
+        "qiskit_circuits": qss.converters.serialize_circuits([qc, qc]),
         "qasm_strs": [out_qasm_str, out_qasm_str],
-        "state_jp": codecs.encode(pickle.dumps({}), "base64").decode(),
+        "state_jp": qss.converters.bytes_to_str(pickle.dumps({})),
     }
     compiler_output = provider.aqt_compile([qc, qc])
-    assert compiler_output.circuits == [expected_qc, expected_qc]
+    assert compiler_output.circuits == [qc, qc]
     assert not hasattr(compiler_output, "circuit")

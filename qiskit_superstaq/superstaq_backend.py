@@ -68,6 +68,7 @@ class SuperstaQBackend(qiskit.providers.BackendV1):
 
         superstaq_json = {
             "qasm_strings": [circuit.qasm() for circuit in circuits],
+            "qiskit_circuits": qss.converters.serialize_circuits(circuits),
             "backend": self.name(),
             "shots": kwargs.get("shots"),
             "ibmq_token": kwargs.get("ibmq_token"),

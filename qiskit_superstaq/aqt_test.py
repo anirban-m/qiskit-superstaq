@@ -1,4 +1,3 @@
-import codecs
 import importlib
 import pickle
 from unittest import mock
@@ -6,6 +5,7 @@ from unittest import mock
 import pytest
 import qiskit
 
+import qiskit_superstaq as qss
 from qiskit_superstaq import aqt
 
 
@@ -24,9 +24,10 @@ def test_read_json() -> None:
     circuit = qiskit.QuantumCircuit(4)
     for i in range(4):
         circuit.h(i)
-    state_str = codecs.encode(pickle.dumps({}), "base64").decode()
+    state_str = qss.converters.bytes_to_str(pickle.dumps({}))
 
     json_dict = {
+        "qiskit_circuits": qss.converters.serialize_circuits([circuit]),
         "qasm_strs": [circuit.qasm()],
         "state_jp": state_str,
     }
@@ -40,6 +41,7 @@ def test_read_json() -> None:
     assert not hasattr(compiler_output, "circuit")
 
     json_dict = {
+        "qiskit_circuits": qss.converters.serialize_circuits([circuit, circuit]),
         "qasm_strs": [circuit.qasm(), circuit.qasm()],
         "state_jp": state_str,
     }
@@ -55,9 +57,10 @@ def test_read_json_with_qtrl() -> None:  # pragma: no cover, b/c test requires q
     circuit = qiskit.QuantumCircuit(4)
     for i in range(4):
         circuit.h(i)
-    state_str = codecs.encode(pickle.dumps(seq.__getstate__()), "base64").decode()
+    state_str = qss.converters.bytes_to_str(pickle.dumps(seq.__getstate__()))
 
     json_dict = {
+        "qiskit_circuits": qss.converters.serialize_circuits([circuit]),
         "qasm_strs": [circuit.qasm()],
         "state_jp": state_str,
     }
@@ -73,6 +76,7 @@ def test_read_json_with_qtrl() -> None:  # pragma: no cover, b/c test requires q
     assert pickle.dumps(compiler_output.seq) == pickle.dumps(seq)
 
     json_dict = {
+        "qiskit_circuits": qss.converters.serialize_circuits([circuit, circuit]),
         "qasm_strs": [circuit.qasm(), circuit.qasm()],
         "state_jp": state_str,
     }
